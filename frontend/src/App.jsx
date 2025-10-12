@@ -88,7 +88,6 @@ export default function App() {
                       <tr className="bg-blue-100 text-blue-700">
                         <th className="px-4 py-2 text-left">Customer Number</th>
                         <th className="px-4 py-2 text-left">Order Count</th>
-                        <th className="px-4 py-2 text-left">Order Amount</th>
                         <th className="px-4 py-2 text-left">Files</th>
                       </tr>
                     </thead>
@@ -97,7 +96,6 @@ export default function App() {
                         <tr key={c.customer} className="border-t border-gray-100">
                           <td className="px-4 py-2 font-mono">{c.customer}</td>
                           <td className="px-4 py-2">{c.order_count}</td>
-                          <td className="px-4 py-2">{c.amount ? c.amount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) : 0}</td>
                           <td className="px-4 py-2 text-xs text-gray-500">{c.filename || ''}</td>
                         </tr>
                       ))}

@@ -37,7 +37,6 @@ def extract_info_from_doc(doc_bytes, filename=None):
     customer_lines = [line for line in text.splitlines() if re.search(r"(number|phone)", line, re.IGNORECASE)]
     customer_numbers = []
     customer_files = []
-    order_amounts = []
     for line in customer_lines:
         # Extract phone numbers (10-13 digits)
         phones = re.findall(r"\b\d{10,13}\b", line)
@@ -46,24 +45,7 @@ def extract_info_from_doc(doc_bytes, filename=None):
                 customer_numbers.append(ph)
                 customer_files.append((ph, filename))
 
-    # Extract order amounts from lines/cells with 'Total bill:' or 'bill:' (case sensitive, with colon)
-    bill_lines = [line for line in text.splitlines() if ("Total bill:" in line or "bill:" in line)]
-    for line in bill_lines:
-        # Try to extract order amount after the colon, possibly with currency
-        amt = None
-        # Look for 'Total bill: 680', 'bill: 680 tk', etc.
-        match = re.search(r"(?:Total bill:|bill:)\s*(\d+[.,]?\d*)", line)
-        if match:
-            amt = match.group(1)
-        # Try to find a customer number in the same line
-        phones = re.findall(r"\b\d{10,13}\b", line)
-        if amt and phones:
-            for ph in phones:
-                try:
-                    order_amounts.append((ph, float(amt.replace(",", "")), filename))
-                except Exception:
-                    continue
-    return size_counts, customer_numbers, order_amounts, customer_files
+    return size_counts, customer_numbers, customer_files
 
 @app.post("/analyze")
 async def analyze_files(files: list[UploadFile] = File(...)):
@@ -71,14 +53,12 @@ async def analyze_files(files: list[UploadFile] = File(...)):
     all_sizes = []
     per_file = []
     all_customers = []
-    all_order_amounts = []
     all_customer_files = []
     for file in files:
         content = await file.read()
-        sizes, customers, order_amounts, customer_files = extract_info_from_doc(content, file.filename)
+        sizes, customers, customer_files = extract_info_from_doc(content, file.filename)
         all_sizes.extend(sizes)
         all_customers.extend(customers)
-        all_order_amounts.extend(order_amounts)
         all_customer_files.extend(customer_files)
         # Per-file top 5
         df_file = pd.Series(sizes, name="size").value_counts().reset_index()
@@ -105,13 +85,8 @@ async def analyze_files(files: list[UploadFile] = File(...)):
             customer_counts = customer_counts[customer_counts["order_count"] >= 1]
         else:
             customer_counts = customer_counts[customer_counts["order_count"] > 1]
-        # Aggregate order amounts by customer
-        if all_order_amounts:
-            df_amt = pd.DataFrame(all_order_amounts, columns=["customer", "amount", "filename"])
-            amt_sum = df_amt.groupby("customer")["amount"].sum().reset_index()
-            customer_counts = customer_counts.merge(amt_sum, on="customer", how="left")
-        else:
-            customer_counts["amount"] = 0
+        # Add a placeholder for the amount column
+        customer_counts["amount"] = 0
         # Aggregate filenames for each customer
         if all_customer_files:
             df_files = pd.DataFrame(all_customer_files, columns=["customer", "filename"])
