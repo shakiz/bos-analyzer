@@ -76,6 +76,37 @@ export default function App() {
               </div>
             </div>
 
+            {/* Top Customers Table */}
+            {results.top_customers && results.top_customers.length > 0 && (
+              <div className="mt-10">
+                <h4 className="text-xl font-bold text-blue-700 mb-4 flex items-center gap-2">
+                  <span role="img" aria-label="customer">👥</span> Top 20 Customers
+                </h4>
+                <div className="overflow-x-auto">
+                  <table className="min-w-[400px] w-full bg-white border border-blue-100 rounded-lg">
+                    <thead>
+                      <tr className="bg-blue-100 text-blue-700">
+                        <th className="px-4 py-2 text-left">Customer Number</th>
+                        <th className="px-4 py-2 text-left">Order Count</th>
+                        <th className="px-4 py-2 text-left">Order Amount</th>
+                        <th className="px-4 py-2 text-left">Files</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {results.top_customers.map((c, i) => (
+                        <tr key={c.customer} className="border-t border-gray-100">
+                          <td className="px-4 py-2 font-mono">{c.customer}</td>
+                          <td className="px-4 py-2">{c.order_count}</td>
+                          <td className="px-4 py-2">{c.amount ? c.amount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) : 0}</td>
+                          <td className="px-4 py-2 text-xs text-gray-500">{c.filename || ''}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
             {/* Per-file breakdown: each file gets its own table */}
             <div className="mt-8">
               <h4 className="text-lg font-bold text-gray-700 mb-3">Detailed Size Breakdown by File</h4>
