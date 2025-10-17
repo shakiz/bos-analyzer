@@ -72,7 +72,7 @@ export default function App() {
             <div className="flex flex-col md:flex-row gap-8 mt-8">
               {/* Overall Bar Chart */}
               <div className="flex-1">
-                <SizeAnalyticsChart topSizes={results.top_sizes} />
+                <SizeAnalyticsChart topSizes={results.top_sizes} predictedSizes={results.predicted_top_sizes}/>
               </div>
             </div>
 
